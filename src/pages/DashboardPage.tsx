@@ -63,6 +63,7 @@ import {
 } from '../lib/mockData';
 import { WeatherWidget } from '../components/WeatherWidget';
 import { DisasterSafetyGuide } from '../components/DisasterSafetyGuide';
+import { LiveNewsWidget } from '../components/LiveNewsWidget';
 
 const tooltipStyle = {
   backgroundColor: 'rgba(12,19,34,0.95)',
@@ -377,6 +378,9 @@ export function DashboardPage() {
           </div>
         </Card>
       </div>
+
+      {/* Live Disaster News */}
+      <LiveNewsWidget />
 
       {/* Disaster Safety Guide */}
       <DisasterSafetyGuide />
