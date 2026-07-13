@@ -16,6 +16,9 @@ import {
   Calendar,
   History,
   MapPin,
+  Globe2,
+  Layers,
+  Activity,
 } from 'lucide-react';
 import { fetchDisasterFeed, SEVERITY_COLORS, SEVERITY_LABELS, type FeedEvent } from '../lib/disasterFeed';
 import {
@@ -58,7 +61,8 @@ import {
   continentRiskBreakdown,
   worldHistoricalTimeline,
 } from '../lib/mockData';
-import { Globe2, Layers, Activity } from 'lucide-react';
+import { WeatherWidget } from '../components/WeatherWidget';
+import { DisasterSafetyGuide } from '../components/DisasterSafetyGuide';
 
 const tooltipStyle = {
   backgroundColor: 'rgba(12,19,34,0.95)',
@@ -115,8 +119,12 @@ export function DashboardPage() {
         <StatCard label="AI Predictions Today" value={stats.aiPredictionsToday.toLocaleString()} icon={BrainCircuit} accent="green" delay={0.25} trend={{ value: '8%', up: true }} />
       </div>
 
-      {/* Charts row 1 */}
+      {/* Weather + Charts row */}
       <div className="grid lg:grid-cols-3 gap-4">
+        {/* Live weather widget */}
+        <WeatherWidget />
+
+        {/* Disaster Trend — spans 2 cols */}
         <Card className="lg:col-span-2">
           <CardHeader title="Disaster Trend" subtitle="Monthly occurrences by disaster type" icon={TrendingUp} />
           <div className="px-4 pb-4" style={{ height: 300 }}>
@@ -143,7 +151,10 @@ export function DashboardPage() {
             </ResponsiveContainer>
           </div>
         </Card>
+      </div>
 
+      {/* Disaster Distribution */}
+      <div className="grid lg:grid-cols-3 gap-4">
         <Card>
           <CardHeader title="Disaster Distribution" subtitle="Share by type" icon={PieIcon} />
           <div className="px-4 pb-4" style={{ height: 300 }}>
@@ -168,13 +179,10 @@ export function DashboardPage() {
             </ResponsiveContainer>
           </div>
         </Card>
-      </div>
 
-      {/* Charts row 2 */}
-      <div className="grid lg:grid-cols-3 gap-4">
         <Card>
           <CardHeader title="Rainfall Trend" subtitle="Last 14 days (mm)" icon={CloudRain} />
-          <div className="px-4 pb-4" style={{ height: 260 }}>
+          <div className="px-4 pb-4" style={{ height: 300 }}>
             <ResponsiveContainer width="100%" height="100%">
               <ComposedChart data={rainfall}>
                 <defs>
@@ -196,7 +204,7 @@ export function DashboardPage() {
 
         <Card>
           <CardHeader title="Temperature Trend" subtitle="Max / Min / Avg (°C)" icon={Thermometer} />
-          <div className="px-4 pb-4" style={{ height: 260 }}>
+          <div className="px-4 pb-4" style={{ height: 300 }}>
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={temp}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.08)" />
@@ -211,26 +219,9 @@ export function DashboardPage() {
             </ResponsiveContainer>
           </div>
         </Card>
-
-        <Card>
-          <CardHeader title="Risk Comparison" subtitle="Predicted vs Actual" icon={BarChart3} />
-          <div className="px-4 pb-4" style={{ height: 260 }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <RadarChart data={compare}>
-                <PolarGrid stroke="rgba(148,163,184,0.12)" />
-                <PolarAngleAxis dataKey="disaster" stroke="#64748b" fontSize={10} />
-                <PolarRadiusAxis stroke="#475569" fontSize={9} angle={90} />
-                <Radar name="Predicted" dataKey="predicted" stroke="#06b6d4" fill="#06b6d4" fillOpacity={0.3} />
-                <Radar name="Actual" dataKey="actual" stroke="#f97316" fill="#f97316" fillOpacity={0.2} />
-                <Tooltip contentStyle={tooltipStyle} />
-                <Legend wrapperStyle={{ fontSize: 11 }} />
-              </RadarChart>
-            </ResponsiveContainer>
-          </div>
-        </Card>
       </div>
 
-      {/* Charts row 3 */}
+      {/* Charts row 2 */}
       <div className="grid lg:grid-cols-3 gap-4">
         <Card className="lg:col-span-2">
           <CardHeader title="Monthly Analysis" subtitle="Alerts, resolved and casualties" icon={Calendar} />
@@ -251,8 +242,28 @@ export function DashboardPage() {
         </Card>
 
         <Card>
-          <CardHeader title="Prediction Accuracy" subtitle="Model performance vs target" icon={Target} />
+          <CardHeader title="Risk Comparison" subtitle="Predicted vs Actual" icon={BarChart3} />
           <div className="px-4 pb-4" style={{ height: 280 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <RadarChart data={compare}>
+                <PolarGrid stroke="rgba(148,163,184,0.12)" />
+                <PolarAngleAxis dataKey="disaster" stroke="#64748b" fontSize={10} />
+                <PolarRadiusAxis stroke="#475569" fontSize={9} angle={90} />
+                <Radar name="Predicted" dataKey="predicted" stroke="#06b6d4" fill="#06b6d4" fillOpacity={0.3} />
+                <Radar name="Actual" dataKey="actual" stroke="#f97316" fill="#f97316" fillOpacity={0.2} />
+                <Tooltip contentStyle={tooltipStyle} />
+                <Legend wrapperStyle={{ fontSize: 11 }} />
+              </RadarChart>
+            </ResponsiveContainer>
+          </div>
+        </Card>
+      </div>
+
+      {/* Prediction accuracy */}
+      <div className="grid lg:grid-cols-3 gap-4">
+        <Card className="lg:col-span-2">
+          <CardHeader title="Prediction Accuracy" subtitle="Model performance vs target" icon={Target} />
+          <div className="px-4 pb-4" style={{ height: 260 }}>
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={accuracy}>
                 <defs>
@@ -271,45 +282,38 @@ export function DashboardPage() {
             </ResponsiveContainer>
           </div>
         </Card>
-      </div>
 
-      {/* Historical timeline + Live feed */}
-      <div className="grid lg:grid-cols-2 gap-4">
+        {/* Historical Timeline */}
         <Card>
           <CardHeader title="Historical Timeline" subtitle="Major disasters in recent years" icon={History} />
-          <div className="px-5 pb-5 space-y-3">
+          <div className="px-5 pb-5 space-y-2 max-h-[260px] overflow-y-auto">
             {timeline.map((e, i) => (
               <motion.div
                 key={i}
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: i * 0.04 }}
-                className="flex items-center gap-4"
+                className="flex items-center gap-3 p-2.5 rounded-xl bg-white/5 hover:bg-white/10 transition-colors"
               >
-                <div className="flex flex-col items-center">
-                  <span className={`w-2.5 h-2.5 rounded-full ${e.severity === 'Critical' ? 'bg-red-500' : 'bg-orange-500'}`} />
-                  {i < timeline.length - 1 && <span className="w-px h-8 bg-border-subtle" />}
+                <span className={`risk-dot ${e.severity === 'Critical' ? 'bg-red-500' : 'bg-orange-500'}`} />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-white truncate">{e.event}</p>
+                  <p className="text-xs text-slate-500">{e.type} · {e.year}</p>
                 </div>
-                <div className="flex-1 flex items-center justify-between py-1">
-                  <div>
-                    <p className="text-sm font-medium text-white">{e.event}</p>
-                    <p className="text-xs text-slate-500">{e.type}</p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-slate-400">{e.year}</span>
-                    <span className={`chip border ${e.severity === 'Critical' ? 'bg-red-500/10 text-red-300 border-red-500/20' : 'bg-orange-500/10 text-orange-300 border-orange-500/20'}`}>
-                      {e.severity}
-                    </span>
-                  </div>
-                </div>
+                <span className={`chip border text-[10px] ${e.severity === 'Critical' ? 'bg-red-500/10 text-red-300 border-red-500/20' : 'bg-orange-500/10 text-orange-300 border-orange-500/20'}`}>
+                  {e.severity}
+                </span>
               </motion.div>
             ))}
           </div>
         </Card>
+      </div>
 
+      {/* Live Alert Feed */}
+      <div className="grid lg:grid-cols-2 gap-4">
         <Card>
           <CardHeader title="Live Alert Feed" subtitle="Real-time notifications" icon={Bell} />
-          <div className="px-5 pb-5 space-y-2 max-h-[420px] overflow-y-auto">
+          <div className="px-5 pb-5 space-y-2 max-h-[360px] overflow-y-auto">
             {feed.map((a, i) => {
               const color = { safe: 'bg-emerald-500', medium: 'bg-yellow-500', high: 'bg-orange-500', critical: 'bg-red-500' }[a.level];
               return (
@@ -333,55 +337,54 @@ export function DashboardPage() {
             })}
           </div>
         </Card>
-      </div>
 
-      {/* Live global disaster feed */}
-      <Card className="mt-4">
-        <CardHeader
-          title="Live Global Disaster Feed"
-          subtitle="Real-time data from USGS & GDACS"
-          icon={Globe2}
-          action={
-            <span className="flex items-center gap-1.5 text-xs text-slate-400">
-              <span className={`w-2 h-2 rounded-full ${feedLoading ? 'bg-amber-400 animate-pulse' : 'bg-emerald-400 animate-pulse'}`} />
-              {feedLoading ? 'Fetching...' : `${feedEvents.length} events`}
-            </span>
-          }
-        />
-        <div className="px-5 pb-5 space-y-2 max-h-[300px] overflow-y-auto">
-          {feedLoading && [1, 2, 3, 4].map((i) => <div key={i} className="skeleton h-14" />)}
-          {!feedLoading && feedEvents.length === 0 && (
-            <p className="text-sm text-slate-400 text-center py-4">Unable to fetch live data right now.</p>
-          )}
-          {!feedLoading && feedEvents.slice(0, 15).map((e) => (
-            <div key={e.id} className="flex items-start gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors">
-              <span className="risk-dot mt-1.5" style={{ backgroundColor: SEVERITY_COLORS[e.severity] }} />
-              <div className="min-w-0 flex-1">
-                <p className="text-sm font-medium text-white truncate">{e.title}</p>
-                <div className="flex items-center gap-2 mt-0.5 text-[10px] text-slate-500">
-                  <span className="capitalize">{e.disaster_type}</span>
-                  <span>· {SEVERITY_LABELS[e.severity]}</span>
-                  <span>· {e.source}</span>
-                  {e.latitude && e.longitude && (
-                    <span className="flex items-center gap-0.5">
-                      <MapPin className="w-2.5 h-2.5" /> {e.latitude.toFixed(1)}, {e.longitude.toFixed(1)}
-                    </span>
-                  )}
+        {/* Live global disaster feed */}
+        <Card>
+          <CardHeader
+            title="Live Global Disaster Feed"
+            subtitle="Real-time data from USGS & GDACS"
+            icon={Globe2}
+            action={
+              <span className="flex items-center gap-1.5 text-xs text-slate-400">
+                <span className={`w-2 h-2 rounded-full ${feedLoading ? 'bg-amber-400 animate-pulse' : 'bg-emerald-400 animate-pulse'}`} />
+                {feedLoading ? 'Fetching...' : `${feedEvents.length} events`}
+              </span>
+            }
+          />
+          <div className="px-5 pb-5 space-y-2 max-h-[360px] overflow-y-auto">
+            {feedLoading && [1, 2, 3, 4].map((i) => <div key={i} className="skeleton h-14" />)}
+            {!feedLoading && feedEvents.length === 0 && (
+              <p className="text-sm text-slate-400 text-center py-4">Unable to fetch live data right now.</p>
+            )}
+            {!feedLoading && feedEvents.slice(0, 15).map((e) => (
+              <div key={e.id} className="flex items-start gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors">
+                <span className="risk-dot mt-1.5" style={{ backgroundColor: SEVERITY_COLORS[e.severity] }} />
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium text-white truncate">{e.title}</p>
+                  <div className="flex items-center gap-2 mt-0.5 text-[10px] text-slate-500">
+                    <span className="capitalize">{e.disaster_type}</span>
+                    <span>· {SEVERITY_LABELS[e.severity]}</span>
+                    <span>· {e.source}</span>
+                    {e.latitude && e.longitude && (
+                      <span className="flex items-center gap-0.5">
+                        <MapPin className="w-2.5 h-2.5" /> {e.latitude.toFixed(1)}, {e.longitude.toFixed(1)}
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
-      </Card>
+            ))}
+          </div>
+        </Card>
+      </div>
+
+      {/* Disaster Safety Guide */}
+      <DisasterSafetyGuide />
 
       {/* World disaster section */}
-      <div className="grid lg:grid-cols-3 gap-4 mt-4">
+      <div className="grid lg:grid-cols-3 gap-4">
         <Card className="lg:col-span-2">
-          <CardHeader
-            title="Global Disaster Trend"
-            subtitle="Worldwide disaster events by type (2024)"
-            icon={Globe2}
-          />
+          <CardHeader title="Global Disaster Trend" subtitle="Worldwide disaster events by type (2024)" icon={Globe2} />
           <div className="px-5 pb-5" style={{ height: 280 }}>
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={worldDisasterTrend()}>
@@ -413,11 +416,7 @@ export function DashboardPage() {
         </Card>
 
         <Card>
-          <CardHeader
-            title="Global Disaster Share"
-            subtitle="Distribution by type"
-            icon={Layers}
-          />
+          <CardHeader title="Global Disaster Share" subtitle="Distribution by type" icon={Layers} />
           <div className="px-5 pb-5" style={{ height: 280 }}>
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -443,13 +442,9 @@ export function DashboardPage() {
         </Card>
       </div>
 
-      <div className="grid lg:grid-cols-2 gap-4 mt-4">
+      <div className="grid lg:grid-cols-2 gap-4">
         <Card>
-          <CardHeader
-            title="Continent Risk Breakdown"
-            subtitle="Disaster frequency by continent"
-            icon={Activity}
-          />
+          <CardHeader title="Continent Risk Breakdown" subtitle="Disaster frequency by continent" icon={Activity} />
           <div className="px-5 pb-5" style={{ height: 280 }}>
             <ResponsiveContainer width="100%" height="100%">
               <RadarChart data={continentRiskBreakdown()}>
@@ -468,11 +463,7 @@ export function DashboardPage() {
         </Card>
 
         <Card>
-          <CardHeader
-            title="World Disaster Timeline"
-            subtitle="Major global disasters (2023–2024)"
-            icon={Globe2}
-          />
+          <CardHeader title="World Disaster Timeline" subtitle="Major global disasters (2023–2024)" icon={Globe2} />
           <div className="px-5 pb-5 space-y-2 max-h-[280px] overflow-y-auto">
             {worldHistoricalTimeline().map((e, i) => (
               <motion.div
@@ -482,7 +473,7 @@ export function DashboardPage() {
                 transition={{ delay: i * 0.04 }}
                 className="flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors"
               >
-                <span className={`risk-dot mt-1 ${e.severity === 'Critical' ? 'bg-red-500' : 'bg-orange-500'}`} />
+                <span className={`risk-dot ${e.severity === 'Critical' ? 'bg-red-500' : 'bg-orange-500'}`} />
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-white truncate">{e.event}</p>
                   <p className="text-xs text-slate-500">{e.country} · {e.type}</p>
